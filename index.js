@@ -12,32 +12,38 @@ function connectToMongoose() {
 }
 connectToMongoose();
 
-function createCatModel() {
-  const Cat = mongoose.model("Cat", { name: String });
-  return Cat;
-}
-const Cat = createCatModel();
+const Student = mongoose.model("Student", {
+  firstName: {
+    type: String,
+    unique: true,
+  },
+});
+const City = mongoose.model("City", {
+  name: {
+    type: String,
+    unique: true,
+  },
+});
 
-function addNewKitty(name) {
-  const kitty = new Cat({ name: name });
-  kitty
-    .save()
-    .then((resp) => console.log(resp))
-    .catch((err) => console.error(err));
-}
-
-function showAllCats() {
-  Cat.find()
-    .then((resp) => console.log(resp))
-    .catch((err) => console.error(err));
-}
-
-function add10Kitties() {
-  for (let i = 0; i < 10; i++) {
-    addNewKitty(`${i} kitty`);
+async function handleManyInserts(array, model) {
+  const insertedItems = [];
+  for (const element of array) {
+    try {
+      const newItem = await model.create(element);
+      insertedItems.push(newItem);
+    } catch (err) {
+      console.error(err);
+    }
   }
+  return insertedItems;
 }
 
-add10Kitties();
+const students = [{ firstName: "Marco" }, { firstName: "Nina" }];
+const cities = [{ name: "Berlin" }, { name: "London" }];
 
-setTimeout(showAllCats, 1500);
+Promise.all([
+  handleManyInserts(students, Student),
+  handleManyInserts(cities, City),
+])
+  .then((resp) => console.log(resp))
+  .catch((e) => console.log(e));
