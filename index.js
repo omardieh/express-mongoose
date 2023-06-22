@@ -1,24 +1,43 @@
-const express = require("express");
-const app = express();
+const mongoose = require("mongoose");
 
-app.use(express.json());
-app.set("views", __dirname + "/views");
-app.set("view engine", "hbs");
-
-const cities = ["Paris", "London", "Berlin"];
-
-app.get("/", (req, res) => {
-  res.render("index", { cities: cities });
-});
-
-app.post("/", (req, res) => {
-  const { city } = req.body;
-  if (city) {
-    cities.push(city);
-    res.status(201).send(`the ${city} has been added to the array of cities`);
-  } else {
-    res.status(400).send(`no city was given in the post request`);
+function connectToMongoose() {
+  try {
+    mongoose
+      .connect("mongodb://127.0.0.1:27017/examples")
+      .then((resp) => console.log(`connected to ${resp.connections[0].name}`))
+      .catch((err) => console.error(err));
+  } catch (error) {
+    console.log(error);
   }
-});
+}
+connectToMongoose();
 
-app.listen(3000);
+function createCatModel() {
+  const Cat = mongoose.model("Cat", { name: String });
+  return Cat;
+}
+const Cat = createCatModel();
+
+function addNewKitty(name) {
+  const kitty = new Cat({ name: name });
+  kitty
+    .save()
+    .then((resp) => console.log(resp))
+    .catch((err) => console.error(err));
+}
+
+function showAllCats() {
+  Cat.find()
+    .then((resp) => console.log(resp))
+    .catch((err) => console.error(err));
+}
+
+function add10Kitties() {
+  for (let i = 0; i < 10; i++) {
+    addNewKitty(`${i} kitty`);
+  }
+}
+
+add10Kitties();
+
+setTimeout(showAllCats, 1500);
