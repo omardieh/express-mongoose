@@ -1,4 +1,11 @@
 const mongoose = require("mongoose");
+const express = require("express");
+const app = express();
+const User = require("./models/User.js");
+
+app.set("view engine", "hbs");
+app.set("views", __dirname + "/views");
+app.use(express.static(__dirname + "/public"));
 
 function connectToMongoose() {
   try {
@@ -12,38 +19,32 @@ function connectToMongoose() {
 }
 connectToMongoose();
 
-const Student = mongoose.model("Student", {
-  firstName: {
-    type: String,
-    unique: true,
-  },
-});
-const City = mongoose.model("City", {
-  name: {
-    type: String,
-    unique: true,
-  },
-});
+function generateUser() {
+  const user1 = new User({
+    email: "email@example.com",
+    username: "helloKitty123",
+  });
+  user1
+    .save()
+    .then((newUser) => console.log(`created ${newUser.email}`))
+    .catch((err) => console.error(err));
+}
+//generateUser();
 
-async function handleManyInserts(array, model) {
-  const insertedItems = [];
-  for (const element of array) {
-    try {
-      const newItem = await model.create(element);
-      insertedItems.push(newItem);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-  return insertedItems;
+function getAllUsers() {
+  return User.find({}).then((users) => users);
 }
 
-const students = [{ firstName: "Marco" }, { firstName: "Nina" }];
-const cities = [{ name: "Berlin" }, { name: "London" }];
+app.get("/", (req, res) => {
+  User.find().then((users) => {
+    res.render("index", { users });
+  });
+});
 
-Promise.all([
-  handleManyInserts(students, Student),
-  handleManyInserts(cities, City),
-])
-  .then((resp) => console.log(resp))
-  .catch((e) => console.log(e));
+// app.get("/", async (req, res) => {
+//   const users = await getAllUsers();
+//   console.log(users);
+//   res.render("index", { users });
+// });
+
+app.listen(3000);

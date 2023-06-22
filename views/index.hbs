@@ -5,8 +5,11 @@
     <title>Document</title>
   </head>
   <body>
-    {{#each cities}}
-      <p>{{this}}</p>
+    Hello
+    {{#each users}}
+      <p>{{this.email}}</p>
+      <p>{{this.username}}</p>
+      <img src="{{this.avatarUrl}}" />
     {{/each}}
   </body>
 </html>
